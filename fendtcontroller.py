@@ -8,45 +8,50 @@ TURN_MOTOR_PIN = 12
 LEFT_PIN = 18
 RIGHT_PIN = 16
 
-STEPPER_SECONDS = 1
+#STEPPER_SECONDS = 1
 
-from time import sleep
+PORT = 50007
+
+#from time import sleep
 import RPi.GPIO as GPIO
+import socket
+import sys
+
+def init():
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(MOVE_MOTOR_PIN, GPIO.OUT)
+    GPIO.setup(FORWARD_PIN, GPIO.OUT)
+    GPIO.setup(BACKWARD_PIN, GPIO.OUT)
+    GPIO.setup(TURN_MOTOR_PIN, GPIO.OUT)
+    GPIO.setup(LEFT_PIN, GPIO.OUT)
+    GPIO.setup(RIGHT_PIN, GPIO.OUT)
+
+def done():
+    GPIO.cleanup()
+
+def stopAll()
+    GPIO.output(FORWARD_PIN, False)
+    GPIO.output(LEFT_PIN, False)
+    GPIO.output(RIGHT_PIN, False)
+    GPIO.output(BACKWARD_PIN, False)
+    GPIO.output(TURN_MOTOR_PIN, False)
+    GPIO.output(MOVE_MOTOR_PIN, False)
 
 def enableMotor(movePin, directionPin, motorPin, turnPin):
-    print 'Move Pin {} and MotorPin {} and Stepper {}'.format(movePin, motorPin, STEPPER_SECONDS)
+    stopAll()
+    print 'Move Pin {} and MotorPin {}'.format(movePin, motorPin)
+#   print ' and Stepper {}'.format(STEPPER_SECONDS) 
     GPIO.output(motorPin, True)
     GPIO.output(turnPin, True)
     GPIO.output(movePin, True)
     GPIO.output(directionPin, True)
-    sleep(STEPPER_SECONDS)
-    GPIO.output(movePin, False)
-    GPIO.output(motorPin, False)
-    GPIO.output(directionPin, False)
-    GPIO.output(turnPin, False)
+#    sleep(STEPPER_SECONDS)
+#    GPIO.output(movePin, False)
+#    GPIO.output(motorPin, False)
+#    GPIO.output(directionPin, False)
+#    GPIO.output(turnPin, False)
 
-print "Fendt Motor Runner..."
-print "Mit RPI Board {} und Libversion {}".format(GPIO.RPI_REVISION, GPIO.VERSION)
-print "vl = VOR LINKS"
-print "vr = VOR RECHTS"
-print "vv = VOR VOR"
-print "zl = ZURUECK LINKS"
-print "zr = ZURUECK RECHTS"
-print "zz = ZURUECK ZURUECK"
-print "n zum Beenden"    
-
-userinput = "-"
-
-GPIO.setmode(GPIO.BOARD)
-GPIO.setup(MOVE_MOTOR_PIN, GPIO.OUT)
-GPIO.setup(FORWARD_PIN, GPIO.OUT)
-GPIO.setup(BACKWARD_PIN, GPIO.OUT)
-GPIO.setup(TURN_MOTOR_PIN, GPIO.OUT)
-GPIO.setup(LEFT_PIN, GPIO.OUT)
-GPIO.setup(RIGHT_PIN, GPIO.OUT)
-
-while userinput <> "n":
-    userinput = raw_input('Wohin? ')
+def evaluateDirection(userinput):
     if userinput=='vl':
         enableMotor(FORWARD_PIN, LEFT_PIN, MOVE_MOTOR_PIN, TURN_MOTOR_PIN)
     if userinput=='vr':
@@ -59,7 +64,66 @@ while userinput <> "n":
         enableMotor(BACKWARD_PIN, RIGHT_PIN, MOVE_MOTOR_PIN, TURN_MOTOR_PIN)
     if userinput=='zz':
         enableMotor(BACKWARD_PIN, BACKWARD_PIN, MOVE_MOTOR_PIN, MOVE_MOTOR_PIN)
-    if userinput=='n':
-        break
+    if userinput=='s':
+        stopAll()
+    
 
-GPIO.cleanup()
+def consoleMode():
+    print "Fendt Motor Runner..."
+    print "Mit RPI Board {} und Libversion {}".format(GPIO.RPI_REVISION, GPIO.VERSION)
+    print "vl = VOR LINKS"
+    print "vr = VOR RECHTS"
+    print "vv = VOR VOR"
+    print "zl = ZURUECK LINKS"
+    print "zr = ZURUECK RECHTS"
+    print "zz = ZURUECK ZURUECK"
+    print "s  = STOP"
+    print "n zum Beenden"    
+
+    userinput = "-"
+
+    while userinput <> "n":
+        userinput = raw_input('Wohin? ')
+        evaluateDirection(userinput)
+        if userinput=='n':
+            break
+
+def showUsage():
+    print 'Use parameter <console> for console mode or <service> for service mode'
+
+def serviceMode():
+    theSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    theSocket.bind(('', PORT))
+    theSocket.listen(1)
+    while 1:
+        try:
+            conn, addr = theSocket.accept()
+            if addr[0] != '127.0.0.1':
+                theSocket.close()
+                raise OnlyLocalConnectAllowed('Only accepting local connects!')
+            while 1:
+                data = theSocket.recv(1024)
+                if len(data) == 2 || data=='s':
+                    evaluateDirection(data)
+                    theSocket.send('OK')
+                elif data == 'close':
+                    theSocket.close()
+                    break
+                else:
+                    theSocket.send('Wrong command! Only 2 characters or <s> allowed!: {}'.format(data))
+        except:
+            print 'Socket error or error in operation!', sys.exc_info()[0]
+            
+
+if __name__ == '__main__':
+    if sys.argv.count > 1:
+        init()
+        if sys.argv[1] == 'console':
+            consoleMode()
+        elif sys.argv[1] == 'service':
+            serviceMode()
+        else:
+            showUsage()
+        done()
+    else:
+        showUsage()
