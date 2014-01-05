@@ -108,17 +108,21 @@ def serviceMode():
                     evaluateDirection(data)
                     conn.send('OK')
                 elif repr(data) == 'close':
+                    evaluateDirection('s')
                     conn.close()
                     break
                 else:
                     conn.send('Wrong command! Only 2 characters or <s> allowed!: {}'.format(data))
+        except KeyboardInterrupt:
+            print 'Ending due to keyboard interrupt!'
+            break
         except:
             print 'Socket error or error in operation!', sys.exc_info()[0]
             
 
 if __name__ == '__main__':
-    print 'Arguments: ', repr(sys.argv.count)
-    if sys.argv.count > 1:
+    print 'Arguments: ', repr(len(sys.argv))
+    if len(sys.argv) > 1:
         init()
         if sys.argv[1] == 'console':
             consoleMode()

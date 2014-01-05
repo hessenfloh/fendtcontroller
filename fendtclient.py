@@ -20,9 +20,10 @@ print "n zum Beenden"
 
 while userinput != 'n':
     userinput = raw_input('Choose direction: ')
-    client.send(userinput)
-    data = client.recv(1024)
-    print 'Answer from server: ', repr(data)
+    if userinput != 'n':
+        client.send(userinput)
+        data = client.recv(1024)
+        print 'Answer from server: ', repr(data)
 
 client.send('close')
 client.close()
