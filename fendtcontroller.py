@@ -39,7 +39,7 @@ def stopAll():
 
 def enableMotor(movePin, directionPin, motorPin, turnPin):
     stopAll()
-    print 'Move Pin {} and MotorPin {}'.format(movePin, motorPin)
+    print 'Pins: Move {} Direction {} Motor {} Turn {}'.format(movePin, directionPin, motorPin, turnPin)
 #   print ' and Stepper {}'.format(STEPPER_SECONDS) 
     GPIO.output(motorPin, True)
     GPIO.output(turnPin, True)
