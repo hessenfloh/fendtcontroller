@@ -103,10 +103,11 @@ def serviceMode():
                 raise OnlyLocalConnectAllowed('Only accepting local connects!')
             while 1:
                 data = conn.recv(1024)
+                print 'local echo client: ', repr(data) 
                 if (len(data) == 2) or (data=='s'):
                     evaluateDirection(data)
                     conn.send('OK')
-                elif data == 'close':
+                elif repr(data) == 'close':
                     conn.close()
                     break
                 else:
@@ -116,6 +117,7 @@ def serviceMode():
             
 
 if __name__ == '__main__':
+    print 'Arguments: ', repr(sys.argv.count)
     if sys.argv.count > 1:
         init()
         if sys.argv[1] == 'console':
