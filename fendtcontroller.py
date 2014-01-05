@@ -29,7 +29,7 @@ def init():
 def done():
     GPIO.cleanup()
 
-def stopAll()
+def stopAll():
     GPIO.output(FORWARD_PIN, False)
     GPIO.output(LEFT_PIN, False)
     GPIO.output(RIGHT_PIN, False)
@@ -99,18 +99,18 @@ def serviceMode():
         try:
             conn, addr = theSocket.accept()
             if addr[0] != '127.0.0.1':
-                theSocket.close()
+                conn.close()
                 raise OnlyLocalConnectAllowed('Only accepting local connects!')
             while 1:
-                data = theSocket.recv(1024)
-                if len(data) == 2 || data=='s':
+                data = conn.recv(1024)
+                if (len(data) == 2) or (data=='s'):
                     evaluateDirection(data)
-                    theSocket.send('OK')
+                    conn.send('OK')
                 elif data == 'close':
-                    theSocket.close()
+                    conn.close()
                     break
                 else:
-                    theSocket.send('Wrong command! Only 2 characters or <s> allowed!: {}'.format(data))
+                    conn.send('Wrong command! Only 2 characters or <s> allowed!: {}'.format(data))
         except:
             print 'Socket error or error in operation!', sys.exc_info()[0]
             
