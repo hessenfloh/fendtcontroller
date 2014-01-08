@@ -5,6 +5,9 @@ from TractorClient import TractorClient
 
 app = Flask(__name__)
 
+@app.route("/")
+def index():
+    return send_from_directory('static', 'TractorControl.html')
 
 @app.route('/moveForward')
 def moveForward():
@@ -12,6 +15,7 @@ def moveForward():
     ret=tractor.connectTractor()
     if tractor.isConnected():
         ret = 'Moving Forward!'
+	ret += repr(tractor.sendInstruction("vv"))
         tractor.disconnectTractor()
     return ret
 
