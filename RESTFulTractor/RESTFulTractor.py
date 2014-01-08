@@ -1,12 +1,15 @@
 #!/usr/bin/python
 
-from flask import Flask
+from flask import Flask, url_for, send_from_directory
 from TractorClient import TractorClient
 
 app = Flask(__name__)
 
 @app.route("/")
 def index():
+    url_for('static', filename='TractorControl.html')
+    url_for('static', filename='TractorControl.css')
+    url_for('static', filename='TractorControl.js')
     return send_from_directory('static', 'TractorControl.html')
 
 @app.route('/moveForward')

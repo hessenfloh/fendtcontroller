@@ -3,3 +3,4 @@
 
 #Compiled files
 *.pyc
+*.pyo
