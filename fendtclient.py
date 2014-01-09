@@ -6,6 +6,8 @@ import socket
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(('', PORT))
+data = client.recv(1024)
+print "Client ID is: {}".format(data)
 
 userinput = '-'
 print "Fendt Motor Runner..."
