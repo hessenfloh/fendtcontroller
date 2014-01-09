@@ -3,12 +3,9 @@ var pingback;
 
 function pingTractorServer()
 {
-    $.post("/moveForward/",
-           {
-               html: "Pingback...",
-               delay: 1
-           },
-          function(data, status)
+    $.get("pingTractor",
+	  { action: "connect" },
+          function(data)
            {
                pings ++;
                $("#pingresponse").text(data + " number " + pings);
@@ -30,35 +27,44 @@ $("#connect").click(function ()
                         }
                     });
 $("#forward").click(function () {
-$.post("/echo/html/",
-       {
-           html: "OK! Forward",
-           delay: 1
-       },
-       function(data, status){
+$.get("moveForward",
+       function(data){
            $("#serverresponse").text(data)
        })
 });
 
 $("#forwardleft").click(function () {
-$.post("/echo/html/",
-       {
-           html: "OK! Forward Left",
-           delay: 1
-       },
-       function(data, status){
+$.get("moveForwardLeft",
+       function(data){
            $("#serverresponse").text(data)
        })
 });
 
 $("#forwardright").click(function () {
-$.post("/echo/html/",
-       {
-           html: "OK! Forward Right",
-           delay: 1
-       },
-       function(data, status){
+$.get("moveForwardRight",
+       function(data){
            $("#serverresponse").text(data)
        })
 });
+$("#backward").click(function () {
+$.get("moveBackward",
+       function(data){
+           $("#serverresponse").text(data)
+       })
+});
+
+$("#backwardleft").click(function () {
+$.get("moveBackwardLeft",
+       function(data){
+           $("#serverresponse").text(data)
+       })
+});
+
+$("#backwardright").click(function () {
+$.get("moveBackwardRight",
+       function(data){
+           $("#serverresponse").text(data)
+       })
+});
+
 });

@@ -16,6 +16,7 @@ PORT = 50007
 import RPi.GPIO as GPIO
 import socket
 import sys
+from uuid import uuid4
 
 def init():
     GPIO.setmode(GPIO.BOARD)
@@ -91,6 +92,8 @@ def consoleMode():
 def showUsage():
     print 'Use parameter <console> for console mode or <service> for service mode'
 
+__clientid = None
+
 def serviceMode():
     theSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     theSocket.bind(('', PORT))
@@ -102,6 +105,8 @@ def serviceMode():
                 conn.close()
                 raise OnlyLocalConnectAllowed('Only accepting local connects!')
             while 1:
+                __clientid = uuid4()
+                conn.send(__clientid)
                 data = conn.recv(1024)
                 print 'local echo client: ', repr(data) 
                 if (len(data) == 2) or (data=='s'):
