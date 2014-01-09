@@ -14,6 +14,7 @@ function pingTractorServer()
                $("#pingresponse").text(data + " number " + pings);
            })
 }
+$().ready(function() {
 $("#connect").click(function () 
                     { 
                         var current = $("#connect").text();
@@ -59,4 +60,5 @@ $.post("/echo/html/",
        function(data, status){
            $("#serverresponse").text(data)
        })
+});
 });
