@@ -1,11 +1,58 @@
 #import RPi.GPIO as GPIO
 import RPIMockGPIO as GPIO
+import asyncore
 import socket
 import sys
 
-from threading import Timer
+from threading import Thread
 from uuid import uuid4
-from time import time
+from time import time, sleep
+
+class SocketReader(asyncore.dispatcher_with_send):
+    def __init__(self, sock, eval_function):
+        asyncore.dispatcher_with_send.__init__(self, sock)
+        self.__eval_function = eval_function
+        self.__lastPing = time()
+        print "last ping is: ", repr(self.__lastPing)
+        self.__timer = Thread(target=self.checkPing)
+        self.__timer.start()
+
+    def checkPing(self):
+        while 1:
+            if (self.__lastPing + 4) < time():
+                print "Need to disconnect!!" 
+                self.__eval_function('s')
+                self.close()
+                break
+            else:
+                sleep(1)
+
+    def handle_read(self):
+        data = self.recv(1024)
+        if data:
+            self.__lastPing = time()
+            if self.__eval_function(data):
+                self.send('OK')
+            else:
+                self.close()
+
+class MainSocket(asyncore.dispatcher):
+    def __init__(self, host, port, eval_function):
+        asyncore.dispatcher.__init__(self)
+        self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.set_reuse_addr()
+        self.bind((host, port))
+        self.listen(1)
+        self.__eval_function = eval_function
+        
+    def handle_accept(self):
+        pair = self.accept()
+        if pair is not None:
+            sock, addr = pair
+            if addr[0] != '127.0.0.1':
+                self.close()
+                raise OnlyLocalConnectAllowed('Only accepting local connects!')
+            handler = SocketReader(sock, self.__eval_function)
 
 
 class FendtService:
@@ -38,6 +85,7 @@ class FendtService:
         GPIO.output(directionPin, True)
 
     def evaluateDirection(self, userinput):
+        goOn = True
         if userinput=='vl':
             self.enableMotor(self.__forwardPin, self.__leftPin, self.__movePin, self.__turnPin)
         if userinput=='vr':
@@ -52,6 +100,10 @@ class FendtService:
             self.enableMotor(self.__backPin, self.__backPin, self.__movePin, self.__movePin)
         if userinput=='s':
             self.stopAll()
+        if userinput=='close':
+            self.stopAll()
+            goOn = False            
+        return goOn
         
 
     def consoleMode(self):
@@ -74,48 +126,14 @@ class FendtService:
             if userinput=='n':
                 break
 
-    def checkPing(self):
-        if (self.__lastPing + 2) < time():
-            print "Need to disconnect!!" 
-            self.__disconnect = True
-            self.stopAll()
-
     def serviceMode(self, port):
-        theSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        theSocket.bind(('', port))
-        theSocket.listen(1)
         while 1:
-            try:
-                self.__conn, addr = theSocket.accept()
-                print "a client tries to connect..."
-                if addr[0] != '127.0.0.1':
-                    self.__conn.close()
-                    raise OnlyLocalConnectAllowed('Only accepting local connects!')
-                else:
-                    self.__clientid = repr(uuid4())
-                    print "generated client id: {}".format(self.__clientid)
-                    self.__conn.send(self.__clientid)
-                    self.__disconnect = False
-                    self.__lastPing = time()
-                    print "last ping is: ", repr(self.__lastPing)
-                    self.__timer = Timer(1, self.checkPing)
-                    self.__timer.start()
-                while 1:
-                    print 'waiting for client...'
-                    data = self.__conn.recv(1024)
-                    print 'local echo client: ', repr(data) 
-                    if (len(data) == 2) or (data=='s'):
-                        self.evaluateDirection(data)
-                        self.__conn.send('OK')
-                    elif repr(data) == 'close':
-                        self.__timer.cancel()
-                        self.evaluateDirection('s')
-                        self.__conn.close()
-                        break
-                    else:
-                        self.__conn.send('Wrong command! Only 2 characters or <s> allowed!: {}'.format(data))
+            server = MainSocket('', port, self.evaluateDirection)
+            try:                
+                asyncore.loop()                
             except KeyboardInterrupt:
                 print 'Ending due to keyboard interrupt!'
+                server.close()
                 break
             except:
                 print 'Socket error or error in operation!', sys.exc_info()[0], sys.exc_info()[1]

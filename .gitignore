@@ -4,3 +4,6 @@
 #Compiled files
 *.pyc
 *.pyo
+
+#JEDIT temp files
+*.py~

@@ -13,9 +13,7 @@ class TractorClient:
         try:
             self.__client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.__client.connect(('', PORT))
-            clientid = self.__client.recv(1024)
             self.__connected = True
-            return clientid
         except socket.error:
             self.__connected = False
             return 'Connection error!'
