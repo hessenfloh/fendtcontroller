@@ -14,8 +14,11 @@ class FendtClient:
             if not self.__queue.empty():
                 cmd = self.__queue.get()
                 print "cmd is ", cmd
+                self.__client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.__client.connect(('', PORT))
                 self.__client.send(cmd)
                 data = self.__client.recv(1024)
+                self.__client.close()
                 print 'Answer to {} from server: {}'.format(cmd, repr(data))
             sleep(0.5)
             print "send Loop..."
@@ -29,8 +32,6 @@ class FendtClient:
     def mainLoop(self):
         self.__queue = Queue()
         self.__queue.put('ping')
-        self.__client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.__client.connect(('', PORT))
         
         userinput = '-'
         print "Fendt Motor Runner..."
@@ -54,13 +55,12 @@ class FendtClient:
             userinput = raw_input('Choose direction: ')
             if userinput != 'n':
                 self.__queue.put(userinput)
-        self.__client.send('close')
+        self.__queue.put('close')
         while not self.__queue.empty():
             sleep(0.5)
         self.__isrunning = False        
         t.join()
         t2.join()
-        self.__client.close()
         
 f = FendtClient()
 f.mainLoop()

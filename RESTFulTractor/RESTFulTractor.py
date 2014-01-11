@@ -18,7 +18,7 @@ def connectAndSend(cmd):
     tractor = TractorClient()
     ret=tractor.connectTractor()
     if tractor.isConnected():
-	    ret = repr(tractor.sendInstruction(cmd))
+        ret = repr(tractor.sendInstruction(cmd))
         tractor.disconnectTractor()
     return ret  
 
@@ -50,6 +50,10 @@ def moveBackwardLeft():
 def moveBackwardRight():
     return connectAndSend('zr')
 
+@app.route('/stop')
+def stop():
+    return connectAndSend('s')
+
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=True)

@@ -26,6 +26,5 @@ class TractorClient:
         
     def disconnectTractor(self):
         if self.__connected:
-            self.__client.send('close')
             self.__client.close()
         

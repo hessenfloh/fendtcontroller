@@ -7,12 +7,34 @@
 <body>
 <div>
     <p>Tractor control<button id="connect">Connect</button></p>
-    <div>
-        <button id="forwardleft">&lt;</button><button id="forward">/\</button><button id="forwardright">&gt;</button>
-    </div>
-<div>
-    <button id="backwardleft">&lt;</button><button id="backward">\/</button><button id="backwardright">&gt;</button>
-</div> 
+    <table class="TractorControl">
+        <tbody>
+        <tr>
+            <td>
+            <button class="leftButton" id="forwardleft">&lt;</button>
+            </td>
+            <td>
+            <button class="centerButton" id="forward">/\</button>
+            </td><td>
+            <button class="rightButton" id="forwardright">&gt;</button>
+            <td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>
+            <button class="centerButton" id="stop">o</button>
+            </td>
+        </tr>
+        <tr>
+            <td>
+            <button class="leftButton" id="backwardleft">&lt;</button>
+            </td><td>
+            <button class="centerButton" id="backward">\/</button>
+            </td><td>
+            <button class="rightButton" id="backwardright">&gt;</button>
+            <td>
+        </tr>
+        </table>
 </div>   
 <div><p>Server response:</p><p class="response" id="serverresponse">-</p>
     <p class="response" id="pingresponse">-</p></div>

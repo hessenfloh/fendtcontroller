@@ -4,7 +4,6 @@ var pingback;
 function pingTractorServer()
 {
     $.get("pingTractor",
-	  { action: "connect" },
           function(data)
            {
                pings ++;
@@ -23,6 +22,7 @@ $("#connect").click(function ()
                         else
                         {
                             clearInterval(pingback);
+                            pings = 0;
                             $("#connect").text("Connect");
                         }
                     });
@@ -62,6 +62,13 @@ $.get("moveBackwardLeft",
 
 $("#backwardright").click(function () {
 $.get("moveBackwardRight",
+       function(data){
+           $("#serverresponse").text(data)
+       })
+});
+
+$("#stop").click(function () {
+$.get("stop",
        function(data){
            $("#serverresponse").text(data)
        })

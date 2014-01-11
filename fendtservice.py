@@ -9,41 +9,30 @@ from uuid import uuid4
 from time import time, sleep
 
 class SocketReader(asyncore.dispatcher_with_send):
-    def __init__(self, sock, eval_function):
+    def __init__(self, sock, eval_function, setPing):
         asyncore.dispatcher_with_send.__init__(self, sock)
         self.__eval_function = eval_function
-        self.__lastPing = time()
-        print "last ping is: ", repr(self.__lastPing)
-        self.__timer = Thread(target=self.checkPing)
-        self.__timer.start()
-
-    def checkPing(self):
-        while 1:
-            if (self.__lastPing + 4) < time():
-                print "Need to disconnect!!" 
-                self.__eval_function('s')
-                self.close()
-                break
-            else:
-                sleep(1)
+        self.__lastPing = setPing
+        self.__lastPing(time())
 
     def handle_read(self):
         data = self.recv(1024)
         if data:
-            self.__lastPing = time()
+            self.__lastPing(time())
             if self.__eval_function(data):
                 self.send('OK')
             else:
                 self.close()
 
 class MainSocket(asyncore.dispatcher):
-    def __init__(self, host, port, eval_function):
+    def __init__(self, host, port, eval_function, setPing):
         asyncore.dispatcher.__init__(self)
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         self.set_reuse_addr()
         self.bind((host, port))
         self.listen(1)
         self.__eval_function = eval_function
+        self.__lastPing = setPing
         
     def handle_accept(self):
         pair = self.accept()
@@ -52,7 +41,7 @@ class MainSocket(asyncore.dispatcher):
             if addr[0] != '127.0.0.1':
                 self.close()
                 raise OnlyLocalConnectAllowed('Only accepting local connects!')
-            handler = SocketReader(sock, self.__eval_function)
+            handler = SocketReader(sock, self.__eval_function, self.__lastPing)
 
 
 class FendtService:
@@ -66,7 +55,8 @@ class FendtService:
         self.__turnPin = turnPin
         self.__movePin = movePin
         self.__clientid = None
-        self.__lastPing = 0
+        self.__lastPing = time()
+        self.__stopped = True
     
     def stopAll(self):
         GPIO.output(self.__forwardPin, False)
@@ -75,6 +65,7 @@ class FendtService:
         GPIO.output(self.__backPin, False)
         GPIO.output(self.__turnPin, False)
         GPIO.output(self.__movePin, False)
+        self.__stopped = True
 
     def enableMotor(self, movePin, directionPin, motorPin, turnPin):
         self.stopAll()
@@ -83,6 +74,7 @@ class FendtService:
         GPIO.output(turnPin, True)
         GPIO.output(movePin, True)
         GPIO.output(directionPin, True)
+        self.__stopped = False
 
     def evaluateDirection(self, userinput):
         goOn = True
@@ -126,14 +118,32 @@ class FendtService:
             if userinput=='n':
                 break
 
+    def setPing(self, pingTime):
+        self.__lastPing = pingTime
+        print "last ping is: ", repr(self.__lastPing)
+        
+    def checkPing(self):
+        while self.__serviceRunning:
+            if (self.__lastPing + 4) < time() and not self.__stopped:
+                print "Need to stop!!" 
+                self.evaluateDirection('s')
+            else:
+                sleep(1)
+        if not self.__stopped:
+            self.evaluateDirection('s')
+
     def serviceMode(self, port):
+        self.__serviceRunning = True
+        self.__timer = Thread(target=self.checkPing)
+        self.__timer.start()
         while 1:
-            server = MainSocket('', port, self.evaluateDirection)
+            server = MainSocket('', port, self.evaluateDirection, self.setPing)
             try:                
                 asyncore.loop()                
             except KeyboardInterrupt:
                 print 'Ending due to keyboard interrupt!'
                 server.close()
+                self.__serviceRunning = False
                 break
             except:
                 print 'Socket error or error in operation!', sys.exc_info()[0], sys.exc_info()[1]
