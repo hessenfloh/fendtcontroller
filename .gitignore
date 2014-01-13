@@ -7,3 +7,6 @@
 
 #JEDIT temp files
 *.py~
+*.html~
+*.js~
+*.css~

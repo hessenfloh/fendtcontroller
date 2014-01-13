@@ -1,40 +1,30 @@
+<!DOCTYPE html>
 <html>
 <head>
 <script src="http://code.jquery.com/jquery-1.9.1.js" type="text/javascript"></script>    
 <script type="text/javascript" src="static/TractorControl.js"></script>
+<script src="static/kickstart.js"></script> <!-- KICKSTART -->
+<link rel="stylesheet" href="static/kickstart.css" media="all" /> <!-- KICKSTART -->
 <link rel=StyleSheet href="static/TractorControl.css" type="text/css"></link>
 </head>
 <body>
 <div>
-    <p>Tractor control<button id="connect">Connect</button></p>
-    <table class="TractorControl">
-        <tbody>
+    <p>Tractor control <button id="connect">Connect</button></p>
+    <table class="tight">
         <tr>
-            <td>
-            <button class="leftButton" id="forwardleft">&lt;</button>
-            </td>
-            <td>
-            <button class="centerButton" id="forward">/\</button>
-            </td><td>
-            <button class="rightButton" id="forwardright">&gt;</button>
-            <td>
+        <td><button class="medium green" id="forwardleft"><i class="icon-arrow-left"></i></button></td>
+        <td><button class="medium green" id="forward"><i class="icon-arrow-up"></i></button></td>
+        <td><button class="medium green" id="forwardright"><i class="icon-arrow-right"></i></button></td>
         </tr>
         <tr>
-            <td></td>
-            <td>
-            <button class="centerButton" id="stop">o</button>
-            </td>
+        <td></td><td><button class="medium red" id="stop"><i class="icon-circle-blank"></i></button></td>
         </tr>
         <tr>
-            <td>
-            <button class="leftButton" id="backwardleft">&lt;</button>
-            </td><td>
-            <button class="centerButton" id="backward">\/</button>
-            </td><td>
-            <button class="rightButton" id="backwardright">&gt;</button>
-            <td>
+        <td><button class="medium green" id="backwardleft"><i class="icon-arrow-left"></i></button></td>
+        <td><button class="medium green" id="backward"><i class="icon-arrow-down"></i></button></td>
+        <td><button class="medium green" id="backwardright"><i class="icon-arrow-right"></i></button></td>
         </tr>
-        </table>
+    </table>            
 </div>   
 <div><p>Server response:</p><p class="response" id="serverresponse">-</p>
     <p class="response" id="pingresponse">-</p></div>
