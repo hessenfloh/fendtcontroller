@@ -1,19 +1,19 @@
 #!/usr/bin/python
 
-MOVE_MOTOR_PIN = 11
-FORWARD_PIN = 13
-BACKWARD_PIN = 15
+MOVE_MOTOR_PIN = 12
+FORWARD_PIN = 18
+BACKWARD_PIN = 16
 
-TURN_MOTOR_PIN = 12
-LEFT_PIN = 18
-RIGHT_PIN = 16
+TURN_MOTOR_PIN = 11
+LEFT_PIN = 15
+RIGHT_PIN = 13
 
 #STEPPER_SECONDS = 1
 
 PORT = 50007
 
-#import RPi.GPIO as GPIO
-import RPIMockGPIO as GPIO
+import RPi.GPIO as GPIO
+#import RPIMockGPIO as GPIO
 import sys
 from fendtservice import FendtService
 
