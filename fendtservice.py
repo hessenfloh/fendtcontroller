@@ -1,5 +1,5 @@
-#import RPi.GPIO as GPIO
-import RPIMockGPIO as GPIO
+import RPi.GPIO as GPIO
+#import RPIMockGPIO as GPIO
 import asyncore
 import socket
 import sys
