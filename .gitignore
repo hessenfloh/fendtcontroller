@@ -10,3 +10,6 @@
 *.html~
 *.js~
 *.css~
+
+#mac files
+.DS_STORE
