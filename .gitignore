@@ -1,5 +1,9 @@
 #Python virtual environment 
 */venv
+/venv
+/include
+/lib
+/local
 
 #Compiled files
 *.pyc
@@ -10,6 +14,7 @@
 *.html~
 *.js~
 *.css~
+*.sh~
 
 #mac files
 .DS_STORE

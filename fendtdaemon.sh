@@ -1,7 +1,7 @@
 #!/bin/sh
  
 ### BEGIN INIT INFO
-# Provides:          myservice
+# Provides:          fendtdaemon
 # Required-Start:    $remote_fs $syslog
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
@@ -11,8 +11,8 @@
 ### END INIT INFO
  
 # Change the next 3 lines to suit where you install your script and what you want to call it
-DIR=/home/florian/Documents/fendtcontroller
-DAEMON=$DIR/fendtservice.py
+DIR=/usr/bin/fendtcontroller
+DAEMON=$DIR/fendtcontroller.py
 DAEMON_NAME=fendtdaemon
  
 # This next line determines what user the script runs as.
@@ -26,7 +26,7 @@ PIDFILE=/var/run/$DAEMON_NAME.pid
  
 do_start () {
     log_daemon_msg "Starting system $DAEMON_NAME daemon"
-    start-stop-daemon --start --background --pidfile $PIDFILE --make-pidfile --user $DAEMON_USER --chuid $DAEMON_USER --startas $DAEMON
+    start-stop-daemon --background --pidfile $PIDFILE --make-pidfile --user $DAEMON_USER --chuid $DAEMON_USER --startas $DAEMON --start -- service 
     log_end_msg $?
 }
 do_stop () {
