@@ -33,7 +33,7 @@ class MainSocket(asyncore.dispatcher):
         self.listen(1)
         self.__eval_function = eval_function
         self.__lastPing = setPing
-        
+
     def handle_accept(self):
         pair = self.accept()
         if pair is not None:
@@ -46,18 +46,20 @@ class MainSocket(asyncore.dispatcher):
 
 class FendtService:
     """Control the Fendt RC tractor using GPIO"""
-    
-    def __init__(self, forwardPin, leftPin, rightPin, backPin, turnPin, movePin):
+
+    def __init__(self, forwardPin, leftPin, rightPin, backPin, turnPin, movePin
+    , sensorPin):
         self.__forwardPin = forwardPin
         self.__leftPin = leftPin
         self.__rightPin = rightPin
         self.__backPin = backPin
         self.__turnPin = turnPin
         self.__movePin = movePin
+        self.__sensorPin = sensorPin
         self.__clientid = None
         self.__lastPing = time()
         self.__stopped = True
-    
+
     def stopAll(self):
         GPIO.output(self.__forwardPin, False)
         GPIO.output(self.__leftPin, False)
@@ -94,11 +96,14 @@ class FendtService:
             self.stopAll()
         if userinput=='close':
             self.stopAll()
-            goOn = False            
+            goOn = False
         return goOn
-        
+
 
     def consoleMode(self):
+        self.__serviceRunning = True
+        self.__timer = Thread(target=self.checkPing)
+        self.__timer.start()
         print "Fendt Motor Runner..."
         print "Mit RPI Board {} und Libversion {}".format(GPIO.RPI_REVISION, GPIO.VERSION)
         print "vl = VOR LINKS"
@@ -108,24 +113,29 @@ class FendtService:
         print "zr = ZURUECK RECHTS"
         print "zz = ZURUECK ZURUECK"
         print "s  = STOP"
-        print "n zum Beenden"    
+        print "n zum Beenden"
 
         userinput = "-"
 
         while userinput <> "n":
             userinput = raw_input('Wohin? ')
             self.evaluateDirection(userinput)
+            self.__lastPing = time()
             if userinput=='n':
+                self.__serviceRunning = False
                 break
 
     def setPing(self, pingTime):
         self.__lastPing = pingTime
         print "last ping is: ", repr(self.__lastPing)
-        
+
     def checkPing(self):
         while self.__serviceRunning:
+            if GPIO.input(self.__sensorPin):
+                print "Stop by sensor request!"
+                self.evaluateDirection('s')
             if (self.__lastPing + 4) < time() and not self.__stopped:
-                print "Need to stop!!" 
+                print "Need to stop!!"
                 self.evaluateDirection('s')
             else:
                 sleep(1)
@@ -138,8 +148,8 @@ class FendtService:
         self.__timer.start()
         while 1:
             server = MainSocket('', port, self.evaluateDirection, self.setPing)
-            try:                
-                asyncore.loop()                
+            try:
+                asyncore.loop()
             except KeyboardInterrupt:
                 print 'Ending due to keyboard interrupt!'
                 server.close()

@@ -8,6 +8,8 @@ TURN_MOTOR_PIN = 11
 LEFT_PIN = 15
 RIGHT_PIN = 13
 
+SENSOR_PIN = 19
+
 #STEPPER_SECONDS = 1
 
 PORT = 50007
@@ -28,6 +30,7 @@ def init():
     GPIO.setup(TURN_MOTOR_PIN, GPIO.OUT)
     GPIO.setup(LEFT_PIN, GPIO.OUT)
     GPIO.setup(RIGHT_PIN, GPIO.OUT)
+    GPIO.setup(SENSOR_PIN, GPIO.IN)
 
 def done():
     GPIO.cleanup()
@@ -36,7 +39,7 @@ if __name__ == '__main__':
     print 'Arguments: ', repr(len(sys.argv))
     if len(sys.argv) > 1:
         init()
-        f = FendtService(FORWARD_PIN, LEFT_PIN, RIGHT_PIN, BACKWARD_PIN, TURN_MOTOR_PIN, MOVE_MOTOR_PIN)
+        f = FendtService(FORWARD_PIN, LEFT_PIN, RIGHT_PIN, BACKWARD_PIN, TURN_MOTOR_PIN, MOVE_MOTOR_PIN, SENSOR_PIN)
         if sys.argv[1] == 'console':
             f.consoleMode()
         elif sys.argv[1] == 'service':
@@ -46,4 +49,3 @@ if __name__ == '__main__':
         done()
     else:
         showUsage()
-                    
